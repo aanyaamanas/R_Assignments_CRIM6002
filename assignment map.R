@@ -155,23 +155,20 @@ pal_2 <- colorNumeric(
   domain = contourBurglary$levels_high
 )
 
-# ------------------------------------------------------------------
-# PART 6: CREATE AND SAVE THE "AMAZING" MAP (WITH FILTERING)
-# ------------------------------------------------------------------
+# PART 6: CREATE AND SAVE THE LA HOTSPOT MAP (WITH FILTERING)
 
-# --- 1. Find the median density level ---
-# We will only show contours *above* this level.
+# 1. Find the median density level
+# Only showing contours *above* this level.
 median_density <- median(contourBurglary$levels_low)
 
-# --- 2. Create the final map object ---
+# 2. Creating the final map object 
 final_map_kde <- leaflet() |>
-  # Use a LIGHT basemap for better contrast
+  # Using a LIGHT basemap for better contrast
   addProviderTiles(providers$CartoDB.Positron) |>
   setView(lng = -118.2437, lat = 34.0522, zoom = 11) |> # Center on LA
   addPolygons(
-    # This is the key:
     data = contourBurglary |>
-      # 1. CROP the map to the shape of the data
+      # 1. CROPPING the map to the shape of the data
       st_intersection(data_sf |>
                         st_geometry() |>
                         st_combine() |>
@@ -179,27 +176,27 @@ final_map_kde <- leaflet() |>
                         st_buffer(200) |> 
                         st_transform(crs = 4326)) |>
       
-      # 2. FILTER to show only hotspots above the median
+      # 2. FILTERING to show only hotspots above the median
       filter(levels_low > median_density),
     
     # Styling for the heatmap:
     fillColor = ~pal_2(levels_high),
-    fillOpacity = 0.7, # Make it a bit more solid
-    color = "transparent", # Remove the white borders
+    fillOpacity = 0.7, # Making it a bit more solid
+    color = "transparent", # Removing the white borders
     weight = 0.5,    
     
-    # Add the great popup label
+    # Adding the popup label
     label = ~paste0("Density: ",
                     format(levels_low,  scientific = FALSE), "-",
                     format(levels_high, scientific = FALSE)) |>
       lapply(htmltools::HTML),
     
-    # Add the hover highlight
+    # Adding the hover highlight
     highlightOptions =
       highlightOptions(weight = 2, bringToFront = TRUE, color = "red")
   ) |>
   
-  # Add the legend
+  # Adding the legend
   addLegend(
     position = "bottomright",
     pal = pal_2,
